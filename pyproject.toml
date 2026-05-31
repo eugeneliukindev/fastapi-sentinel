@@ -3,13 +3,21 @@ name = "fastapi-jwt"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
-    "alembic>=1.18.4",
     "asyncpg>=0.31.0",
     "dishka>=1.10.1",
     "fastapi[standard]>=0.136.3",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.14.1",
     "sqlalchemy[asyncio]>=2.0.50",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.0",
+    "ruff>=0.15.15",
+]
+migration = [
+    "alembic>=1.18.4",
 ]
 
 [tool.ruff]
@@ -27,6 +35,7 @@ select = [
     "E",
     "ERA",
     "F",
+    "FAST",
     "FBT",
     "FLY",
     "FURB",
@@ -61,7 +70,7 @@ ignore = ["E501", "B008", "C901", "W191", "RUF001", "RUF002", "RUF003"]
 
 
 [tool.ruff.lint.per-file-ignores]
-"**/migrations/*.py" = ["RUF012", "E402"]
+"**/migrations/*.py" = ["RUF012", "E402", "INP001"]
 
 
 [tool.alembic]
@@ -81,13 +90,9 @@ script_location = "%(here)s/migrations"
 # file_template = "%%(year)d/%%(month).2d/%%(day).2d_%%(hour).2d%%(minute).2d_%%(second).2d_%%(rev)s_%%(slug)s"
 
 # additional paths to be prepended to sys.path. defaults to the current working directory.
+# include src so env.py can import Base.metadata (models stay import-pure, no app config).
 prepend_sys_path = [
-    "."
-]
-
-[dependency-groups]
-dev = [
-    "ruff>=0.15.15",
+    "%(here)s/src",
 ]
 
 # timezone to use when rendering the date within the migration file
@@ -128,28 +133,15 @@ dev = [
 # are written from script.py.mako
 # output_encoding = "utf-8"
 
-# This section defines scripts or Python functions that are run
-# on newly generated revision scripts.  See the documentation for further
-# detail and examples
-# [[tool.alembic.post_write_hooks]]
-# format using "black" - use the console_scripts runner,
-# against the "black" entrypoint
-# name = "black"
-# type = "console_scripts"
-# entrypoint = "black"
-# options = "-l 79 REVISION_SCRIPT_FILENAME"
-#
-# [[tool.alembic.post_write_hooks]]
-# lint with attempts to fix using "ruff" - use the module runner, against the "ruff" module
-# name = "ruff"
-# type = "module"
-# module = "ruff"
-# options = "check --fix REVISION_SCRIPT_FILENAME"
-#
-# [[tool.alembic.post_write_hooks]]
-# Alternatively, use the exec runner to execute a binary found on your PATH
-# name = "ruff"
-# type = "exec"
-# executable = "ruff"
-# options = "check --fix REVISION_SCRIPT_FILENAME"
+# Post-write hooks: run ruff on each newly generated revision script (lint+autofix, then format).
+[[tool.alembic.post_write_hooks]]
+name = "ruff-check"
+type = "module"
+module = "ruff"
+options = "check --fix REVISION_SCRIPT_FILENAME"
 
+[[tool.alembic.post_write_hooks]]
+name = "ruff-format"
+type = "module"
+module = "ruff"
+options = "format REVISION_SCRIPT_FILENAME"

@@ -1,0 +1,9 @@
+# Run `uv run pre-commit install` once to enable the git hook.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.15
+    hooks:
+      # Linter first (with autofix), then formatter — fixes may need reformatting.
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
