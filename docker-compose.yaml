@@ -1,0 +1,54 @@
+# Single source of truth: MY_APP__DB__* (from .env). HOST/PORT are overridden to the
+# in-compose service address; credentials/name come straight from the environment.
+x-app-env: &app-env
+  MY_APP__DB__HOST: db
+  MY_APP__DB__PORT: "5432"
+  MY_APP__DB__USERNAME: ${MY_APP__DB__USERNAME}
+  MY_APP__DB__PASSWORD: ${MY_APP__DB__PASSWORD}
+  MY_APP__DB__NAME: ${MY_APP__DB__NAME}
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: ${MY_APP__DB__USERNAME}
+      POSTGRES_PASSWORD: ${MY_APP__DB__PASSWORD}
+      POSTGRES_DB: ${MY_APP__DB__NAME}
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${MY_APP__DB__USERNAME} -d ${MY_APP__DB__NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      target: migration
+    environment:
+      <<: *app-env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: app
+    environment:
+      <<: *app-env
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:
