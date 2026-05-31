@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from dishka.integrations.fastapi import DishkaRoute, setup_dishka
 from fastapi import APIRouter, FastAPI
 
-from ioc import container
+from src.ioc import container
 
 
 @asynccontextmanager

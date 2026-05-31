@@ -3,7 +3,7 @@ from collections.abc import AsyncIterable
 from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
-from config import Settings
+from src.config import Settings
 
 
 class DatabaseProvider(Provider):

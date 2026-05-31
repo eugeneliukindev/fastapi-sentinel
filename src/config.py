@@ -1,5 +1,6 @@
+from datetime import timedelta
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -30,6 +31,18 @@ class _DatabaseSettings(BaseModel):
         )
 
 
+class JwtSettings(BaseModel):
+    public_key: str
+    private_key: SecretStr
+    algorithm: Literal["RS256"] = "RS256"
+    access_ttl: timedelta = timedelta(minutes=15)
+    refresh_ttl: timedelta = timedelta(days=30)
+
+
+class AppSettings(BaseModel):
+    jwt: JwtSettings
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         case_sensitive=False,
@@ -42,6 +55,7 @@ class Settings(BaseSettings):
     )
 
     db: _DatabaseSettings
+    app: AppSettings
 
 
 settings = Settings()

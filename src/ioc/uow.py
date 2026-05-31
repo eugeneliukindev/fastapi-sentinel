@@ -1,7 +1,7 @@
 from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.uow import UnitOfWork
+from src.core.uow import UnitOfWork
 
 
 class UoWProvider(Provider):

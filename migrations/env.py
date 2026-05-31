@@ -7,7 +7,7 @@ from sqlalchemy import URL, pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from models import Base
+from src.models import Base
 
 # There is no alembic.ini, so configure logging here instead of fileConfig(): this replaces
 # the [loggers]/[handlers]/[formatters] sections and mirrors alembic's default console output.
