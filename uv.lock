@@ -259,6 +259,8 @@ dev = [
 ]
 migration = [
     { name = "alembic" },
+    { name = "asyncpg" },
+    { name = "sqlalchemy", extra = ["asyncio"] },
 ]
 
 [package.metadata]
@@ -276,7 +278,11 @@ dev = [
     { name = "pre-commit", specifier = ">=4.6.0" },
     { name = "ruff", specifier = ">=0.15.15" },
 ]
-migration = [{ name = "alembic", specifier = ">=1.18.4" }]
+migration = [
+    { name = "alembic", specifier = ">=1.18.4" },
+    { name = "asyncpg", specifier = ">=0.31.0" },
+    { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.50" },
+]
 
 [[package]]
 name = "fastar"

@@ -18,6 +18,8 @@ dev = [
 ]
 migration = [
     "alembic>=1.18.4",
+    "sqlalchemy[asyncio]>=2.0.50",  # used directly by env.py and the models
+    "asyncpg>=0.31.0",  # async driver; needed to actually connect during migrations
 ]
 
 [tool.ruff]
