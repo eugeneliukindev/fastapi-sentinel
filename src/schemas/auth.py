@@ -4,9 +4,9 @@ from pydantic import BaseModel
 
 
 class AccessTokenResponse(BaseModel):
-    access_key: str
+    access_token: str
     type: Literal["Bearer"] = "Bearer"
 
 
 class TokenResponse(AccessTokenResponse):
-    refresh_key: str
+    refresh_token: str

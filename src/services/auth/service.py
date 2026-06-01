@@ -26,13 +26,13 @@ class AuthService:
             raise InvalidCredentialsError
         subject = str(user.id)
         return TokenResponse(
-            access_key=create_access_token(subject),
-            refresh_key=create_refresh_token(subject),
+            access_token=create_access_token(subject),
+            refresh_token=create_refresh_token(subject),
         )
 
     async def refresh(self, refresh_token: str) -> AccessTokenResponse:
         user = await self.authenticate_by_token(refresh_token, TokenType.REFRESH)
-        return AccessTokenResponse(access_key=create_access_token(str(user.id)))
+        return AccessTokenResponse(access_token=create_access_token(str(user.id)))
 
     async def authenticate_by_token(self, token: str, token_type: TokenType) -> UserRead:
         payload = decode_token(token, token_type)
