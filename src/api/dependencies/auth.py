@@ -5,7 +5,6 @@ from dishka.integrations.fastapi import inject
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
-from src.enums import TokenType
 from src.schemas.user import UserRead
 from src.services.auth.service import AuthService
 
@@ -15,7 +14,7 @@ BearerToken = Annotated[str, Depends(oauth2_scheme)]
 
 @inject
 async def get_user_from_access_token(token: BearerToken, auth: FromDishka[AuthService]) -> UserRead:
-    return await auth.authenticate_by_token(token, TokenType.ACCESS)
+    return await auth.access(token)
 
 
 CurrentUser = Annotated[UserRead, Depends(get_user_from_access_token)]

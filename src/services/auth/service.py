@@ -30,11 +30,14 @@ class AuthService:
             refresh_token=create_refresh_token(subject),
         )
 
-    async def refresh(self, refresh_token: str) -> AccessTokenResponse:
-        user = await self.authenticate_by_token(refresh_token, TokenType.REFRESH)
+    async def access(self, token: str) -> UserRead:
+        return await self._authenticate_by_token(token, TokenType.ACCESS)
+
+    async def refresh(self, token: str) -> AccessTokenResponse:
+        user = await self._authenticate_by_token(token, TokenType.REFRESH)
         return AccessTokenResponse(access_token=create_access_token(str(user.id)))
 
-    async def authenticate_by_token(self, token: str, expected_type: TokenType) -> UserRead:
+    async def _authenticate_by_token(self, token: str, expected_type: TokenType) -> UserRead:
         payload = decode_token(token, expected_type)
         user = await self._uow.users.get_by_id(int(payload.sub))
         if user is None:
