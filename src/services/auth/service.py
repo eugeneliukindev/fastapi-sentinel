@@ -21,7 +21,9 @@ class AuthService:
         return UserRead.model_validate(user)
 
     async def login(self, username: str, password: str) -> TokenResponse:
-        user = await self._authenticate(username, password)
+        user: User | None = await self._uow.users.get_by_username(username)
+        if user is None or not verify_password(password, user.hashed_password):
+            raise InvalidCredentialsError
         subject = str(user.id)
         return TokenResponse(
             access_key=create_access_token(subject),
@@ -36,11 +38,5 @@ class AuthService:
         payload = decode_token(token, token_type)
         user = await self._uow.users.get_by_id(int(payload.sub))
         if user is None:
-            raise InvalidCredentialsError
-        return UserRead.model_validate(user)
-
-    async def _authenticate(self, username: str, password: str) -> UserRead:
-        user = await self._uow.users.get_by_username(username)
-        if user is None or not verify_password(password, user.hashed_password):
             raise InvalidCredentialsError
         return UserRead.model_validate(user)
