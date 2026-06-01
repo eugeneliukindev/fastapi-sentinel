@@ -1,7 +1,10 @@
+from functools import cached_property
 from types import TracebackType
 from typing import Self
 
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.repo import UserRepository
 
 
 class UnitOfWork:
@@ -11,6 +14,10 @@ class UnitOfWork:
     @property
     def session(self) -> AsyncSession:
         return self._session
+
+    @cached_property
+    def users(self) -> UserRepository:
+        return UserRepository(self._session)
 
     async def commit(self) -> None:
         await self._session.commit()
