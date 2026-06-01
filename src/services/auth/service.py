@@ -34,8 +34,8 @@ class AuthService:
         user = await self.authenticate_by_token(refresh_token, TokenType.REFRESH)
         return AccessTokenResponse(access_token=create_access_token(str(user.id)))
 
-    async def authenticate_by_token(self, token: str, token_type: TokenType) -> UserRead:
-        payload = decode_token(token, token_type)
+    async def authenticate_by_token(self, token: str, expected_type: TokenType) -> UserRead:
+        payload = decode_token(token, expected_type)
         user = await self._uow.users.get_by_id(int(payload.sub))
         if user is None:
             raise InvalidCredentialsError
