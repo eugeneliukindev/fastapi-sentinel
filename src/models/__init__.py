@@ -1,4 +1,9 @@
-from src.models.base import Base
-from src.models.user import User
+__all__ = [
+    "Base",
+    "TokenBlacklist",
+    "User",
+]
 
-__all__ = ["Base", "User"]
+from .base import Base
+from .token_blacklist import TokenBlacklist
+from .user import User
