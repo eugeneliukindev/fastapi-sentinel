@@ -22,11 +22,5 @@ check: lint typecheck test
 dc *args:
     docker compose {{args}}
 
-migrate message:
-    uv run alembic revision --autogenerate -m "{{message}}"
-
-upgrade revision="head":
-    uv run alembic upgrade {{revision}}
-
-downgrade revision="-1":
-    uv run alembic downgrade {{revision}}
+alembic *args:
+    uv run alembic {{args}}
