@@ -20,8 +20,8 @@ dev = [
 ]
 migration = [
     "alembic>=1.18.4",
-    "sqlalchemy[asyncio]>=2.0.50",  # used directly by env.py and the models
-    "asyncpg>=0.31.0",  # async driver; needed to actually connect during migrations
+    "sqlalchemy[asyncio]>=2.0.50", # used directly by env.py and the models
+    "asyncpg>=0.31.0", # async driver; needed to actually connect during migrations
 ]
 
 [tool.ruff]
@@ -75,7 +75,8 @@ ignore = ["E501", "B008", "C901", "W191", "RUF001", "RUF002", "RUF003"]
 
 
 [tool.ruff.lint.per-file-ignores]
-"**/migrations/*.py" = ["RUF012", "E402", "INP001"]
+"**/migrations/*.py" = ["E402", "INP001"]
+"**/migrations/versions/*.py" = ["RUF012", "W291", "INP001"]
 
 
 [tool.alembic]
@@ -92,7 +93,7 @@ script_location = "%(here)s/migrations"
 # for all available tokens
 # file_template = "%%(year)d_%%(month).2d_%%(day).2d_%%(hour).2d%%(minute).2d-%%(rev)s_%%(slug)s"
 # Or organize into date-based subdirectories (requires recursive_version_locations = true)
-# file_template = "%%(year)d/%%(month).2d/%%(day).2d_%%(hour).2d%%(minute).2d_%%(second).2d_%%(rev)s_%%(slug)s"
+file_template = "%%(year)d/%%(month).2d/%%(day).2d_%%(hour).2d%%(minute).2d_%%(second).2d_%%(rev)s_%%(slug)s"
 
 # additional paths to be prepended to sys.path. defaults to the current working directory.
 # project root on sys.path so env.py can import the `src` package (src.models, ...).
