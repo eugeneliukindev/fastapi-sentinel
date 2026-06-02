@@ -1,26 +1,40 @@
+from typing import Any
+
+from pydantic import BaseModel
+from sqlalchemy import delete, inspect, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.base import Base
 
 
-class BaseRepository[ModelT: Base]:
-    """Generic repository over a single ORM model, operating on an injected session.
-
-    Subclasses set the concrete model:  `class UserRepository(BaseRepository[User]): model = User`.
-    """
-
+class BaseRepository[ModelT: Base, InsertT: BaseModel, UpdateT: BaseModel]:
     model: type[ModelT]
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def get_by_id(self, entity_id: int) -> ModelT | None:
+    async def get_by_id(self, entity_id: Any) -> ModelT | None:
         return await self._session.get(self.model, entity_id)
 
-    async def add(self, entity: ModelT) -> ModelT:
+    async def add(self, data: InsertT) -> ModelT:
+        entity = self.model(**data.model_dump())
         self._session.add(entity)
-        await self._session.flush()  # populates server-side defaults (e.g. id) without committing
+        await self._session.flush()
         return entity
 
-    async def delete(self, entity: ModelT) -> None:
-        await self._session.delete(entity)
+    async def update(self, entity_id: Any, data: UpdateT) -> ModelT | None:
+        pk = inspect(self.model).mapper.primary_key[0]
+        stmt = (
+            update(self.model)
+            .where(pk == entity_id)
+            .values(**data.model_dump(exclude_unset=True))
+            .returning(self.model)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def delete(self, entity_id: Any) -> ModelT | None:
+        pk = inspect(self.model).mapper.primary_key[0]
+        stmt = delete(self.model).where(pk == entity_id).returning(self.model)
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
