@@ -38,17 +38,18 @@ class AuthService:
         await self._uow.commit()
 
     async def access(self, token: str) -> UserRead:
-        return await self._authenticate_by_token(token, TokenType.ACCESS)
+        user: User = await self._authenticate_by_token(token, TokenType.ACCESS)
+        return UserRead.model_validate(user)
 
     async def refresh(self, token: str) -> AccessTokenResponse:
         user = await self._authenticate_by_token(token, TokenType.REFRESH)
         return AccessTokenResponse(access_token=create_access_token(str(user.id)))
 
-    async def _authenticate_by_token(self, token: str, expected_type: TokenType) -> UserRead:
+    async def _authenticate_by_token(self, token: str, expected_type: TokenType) -> User:
         payload = decode_token(token, expected_type)
         if await self._blacklist_service.is_blacklisted(payload.jti):
             raise InvalidCredentialsError
         user = await self._uow.users.get_by_id(int(payload.sub))
         if user is None:
             raise InvalidCredentialsError
-        return UserRead.model_validate(user)
+        return user
