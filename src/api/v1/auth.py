@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from src.api.dependencies.auth import BearerToken, CurrentUser
-from src.schemas.auth import AccessTokenResponse, TokenResponse
+from src.schemas.auth import TokenResponse
 from src.schemas.user import UserCreate, UserRead
 from src.services.auth.service import AuthService
 
@@ -27,7 +27,7 @@ async def login(
 
 
 @router.post("/refresh")
-async def refresh(token: BearerToken, auth: FromDishka[AuthService]) -> AccessTokenResponse:
+async def refresh(token: BearerToken, auth: FromDishka[AuthService]) -> TokenResponse:
     return await auth.refresh(token)
 
 

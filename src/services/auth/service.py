@@ -1,9 +1,10 @@
 from src.core.uow import UnitOfWork
+from src.dto import TokenPayload
 from src.dto.user import UserInsert
 from src.enums import TokenType
 from src.exceptions.auth import InvalidCredentialsError, UserAlreadyExistsError
 from src.models.user import User
-from src.schemas.auth import AccessTokenResponse, TokenResponse
+from src.schemas.auth import TokenResponse
 from src.schemas.user import UserRead
 from src.services.auth.blacklist import TokenBlacklistService
 from src.services.auth.crypto.jwt import create_access_token, create_refresh_token, decode_token
@@ -33,23 +34,30 @@ class AuthService:
         )
 
     async def logout(self, token: str) -> None:
-        payload = decode_token(token, TokenType.REFRESH)
-        await self._blacklist_service.blacklist_token(payload)
-        await self._uow.commit()
+        await self._revoke_refresh_token(token)
 
     async def access(self, token: str) -> UserRead:
-        user: User = await self._authenticate_by_token(token, TokenType.ACCESS)
-        return UserRead.model_validate(user)
-
-    async def refresh(self, token: str) -> AccessTokenResponse:
-        user = await self._authenticate_by_token(token, TokenType.REFRESH)
-        return AccessTokenResponse(access_token=create_access_token(str(user.id)))
-
-    async def _authenticate_by_token(self, token: str, expected_type: TokenType) -> User:
-        payload = decode_token(token, expected_type)
-        if await self._blacklist_service.is_blacklisted(payload.jti):
-            raise InvalidCredentialsError
+        payload = await self._validate_token(token, TokenType.ACCESS)
         user = await self._uow.users.get_by_id(int(payload.sub))
         if user is None:
             raise InvalidCredentialsError
-        return user
+        return UserRead.model_validate(user)
+
+    async def refresh(self, token: str) -> TokenResponse:
+        payload = await self._revoke_refresh_token(token)
+        return TokenResponse(
+            access_token=create_access_token(payload.sub),
+            refresh_token=create_refresh_token(payload.sub),
+        )
+
+    async def _revoke_refresh_token(self, token: str) -> TokenPayload:
+        payload = await self._validate_token(token, TokenType.REFRESH)
+        await self._blacklist_service.blacklist_token(payload)
+        await self._uow.commit()
+        return payload
+
+    async def _validate_token(self, token: str, expected_type: TokenType) -> TokenPayload:
+        payload = decode_token(token, expected_type)
+        if await self._blacklist_service.is_blacklisted(payload.jti):
+            raise InvalidCredentialsError
+        return payload
