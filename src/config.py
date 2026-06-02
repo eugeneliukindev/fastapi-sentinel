@@ -31,16 +31,15 @@ class _DatabaseSettings(BaseModel):
         )
 
 
-class JwtSettings(BaseModel):
-    public_key: str
-    private_key: SecretStr
-    algorithm: Literal["RS256"] = "RS256"
-    access_ttl: timedelta = timedelta(minutes=15)
-    refresh_ttl: timedelta = timedelta(days=30)
+class _AppSettings(BaseModel):
+    class _JwtSettings(BaseModel):
+        public_key: str
+        private_key: SecretStr
+        algorithm: Literal["RS256"] = "RS256"
+        access_ttl: timedelta = timedelta(minutes=15)
+        refresh_ttl: timedelta = timedelta(days=30)
 
-
-class AppSettings(BaseModel):
-    jwt: JwtSettings
+    jwt: _JwtSettings
 
 
 class Settings(BaseSettings):
@@ -55,7 +54,7 @@ class Settings(BaseSettings):
     )
 
     db: _DatabaseSettings
-    app: AppSettings
+    app: _AppSettings
 
 
 settings = Settings()
