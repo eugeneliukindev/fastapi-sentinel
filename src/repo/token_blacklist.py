@@ -9,5 +9,6 @@ class TokenBlacklistRepository(BaseRepository[TokenBlacklist, TokenBlacklistInse
     model = TokenBlacklist
 
     async def is_blacklisted(self, jti: str) -> bool:
-        result = await self._session.scalar(select(exists().where(TokenBlacklist.jti == jti)))
+        stmt = select(exists().where(TokenBlacklist.jti == jti))
+        result = await self._session.scalar(stmt)
         return bool(result)
