@@ -1,15 +1,7 @@
-# Single source of truth: MY_APP__DB__* (from .env). HOST/PORT are overridden to the
-# in-compose service address; credentials/name come straight from the environment.
-x-app-env: &app-env
-  MY_APP__DB__HOST: db
-  MY_APP__DB__PORT: "5432"
-  MY_APP__DB__USERNAME: ${MY_APP__DB__USERNAME}
-  MY_APP__DB__PASSWORD: ${MY_APP__DB__PASSWORD}
-  MY_APP__DB__NAME: ${MY_APP__DB__NAME}
-
 services:
   db:
     image: postgres:18-alpine
+    env_file: .env
     environment:
       POSTGRES_USER: ${MY_APP__DB__USERNAME}
       POSTGRES_PASSWORD: ${MY_APP__DB__PASSWORD}
@@ -29,8 +21,9 @@ services:
     build:
       context: .
       target: migration
+    env_file: .env
     environment:
-      <<: *app-env
+      MY_APP__DB__HOST: db
     depends_on:
       db:
         condition: service_healthy
@@ -40,8 +33,9 @@ services:
     build:
       context: .
       target: app
+    env_file: .env
     environment:
-      <<: *app-env
+      MY_APP__DB__HOST: db
     ports:
       - "8000:8000"
     depends_on:
