@@ -31,6 +31,11 @@ async def refresh(token: BearerToken, auth: FromDishka[AuthService]) -> AccessTo
     return await auth.refresh(token)
 
 
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(token: BearerToken, auth: FromDishka[AuthService]) -> None:
+    await auth.logout(token)
+
+
 @router.get("/me")
 async def me(user: CurrentUser) -> UserRead:
     return user
