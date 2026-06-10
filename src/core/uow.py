@@ -4,7 +4,7 @@ from typing import Self
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.repo import TokenBlacklistRepository, UserRepository
+from src.repo import PermissionRepository, RoleRepository, TokenBlacklistRepository, UserRepository
 
 
 class UnitOfWork:
@@ -18,6 +18,14 @@ class UnitOfWork:
     @cached_property
     def users(self) -> UserRepository:
         return UserRepository(self._session)
+
+    @cached_property
+    def roles(self) -> RoleRepository:
+        return RoleRepository(self._session)
+
+    @cached_property
+    def permissions(self) -> PermissionRepository:
+        return PermissionRepository(self._session)
 
     @cached_property
     def token_blacklist(self) -> TokenBlacklistRepository:

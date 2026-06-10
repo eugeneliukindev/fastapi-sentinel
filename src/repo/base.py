@@ -1,7 +1,7 @@
 from typing import Any
 
 from pydantic import BaseModel
-from sqlalchemy import delete, inspect, update
+from sqlalchemy import delete, inspect, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.base import Base
@@ -15,6 +15,10 @@ class BaseRepository[ModelT: Base, InsertT: BaseModel, UpdateT: BaseModel]:
 
     async def get_by_id(self, entity_id: Any) -> ModelT | None:
         return await self._session.get(self.model, entity_id)
+
+    async def list(self) -> list[ModelT]:
+        result = await self._session.execute(select(self.model))
+        return list(result.scalars().all())
 
     async def add(self, data: InsertT) -> ModelT:
         entity = self.model(**data.model_dump())

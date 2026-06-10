@@ -3,6 +3,7 @@ from src.dto import TokenPayload
 from src.dto.user import UserInsert
 from src.enums import TokenType
 from src.exceptions.auth import InvalidCredentialsError, UserAlreadyExistsError
+from src.models.rbac.role import RoleEnum
 from src.models.user import User
 from src.schemas.auth import TokenResponse
 from src.schemas.user import UserRead
@@ -19,7 +20,12 @@ class AuthService:
     async def register(self, username: str, password: str) -> UserRead:
         if await self._uow.users.get_by_username(username) is not None:
             raise UserAlreadyExistsError
-        user = await self._uow.users.add(UserInsert(username=username, hashed_password=get_password_hash(password)))
+        default_role = await self._uow.roles.get_by_name(RoleEnum.USER)
+        if default_role is None:
+            raise InvalidCredentialsError
+        user = await self._uow.users.add(
+            UserInsert(username=username, hashed_password=get_password_hash(password), role_id=default_role.id)
+        )
         await self._uow.commit()
         return UserRead.model_validate(user)
 
@@ -27,10 +33,9 @@ class AuthService:
         user: User | None = await self._uow.users.get_by_username(username)
         if user is None or not verify_password(password, user.hashed_password):
             raise InvalidCredentialsError
-        subject = str(user.id)
         return TokenResponse(
-            access_token=create_access_token(subject),
-            refresh_token=create_refresh_token(subject),
+            access_token=create_access_token(user.id),
+            refresh_token=create_refresh_token(user.id),
         )
 
     async def logout(self, token: str) -> None:
@@ -38,7 +43,7 @@ class AuthService:
 
     async def access(self, token: str) -> UserRead:
         payload = await self._validate_token(token, TokenType.ACCESS)
-        user = await self._uow.users.get_by_id(int(payload.sub))
+        user = await self._uow.users.get_by_id_with_role_and_permissions(payload.sub)
         if user is None:
             raise InvalidCredentialsError
         return UserRead.model_validate(user)

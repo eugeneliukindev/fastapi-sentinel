@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
+from src.schemas.rbac.role import RoleRead
+
 
 class UserCreate(BaseModel):
     username: str
@@ -11,3 +13,4 @@ class UserRead(BaseModel):
 
     id: int
     username: str
+    role: RoleRead

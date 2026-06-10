@@ -7,14 +7,13 @@ from fastapi.responses import JSONResponse
 
 from src.api.v1 import router as v1_router
 from src.exceptions.auth import InvalidCredentialsError, UserAlreadyExistsError
+from src.exceptions.rbac import InsufficientPermissionsError
 from src.ioc import container
 
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
     yield
-    # On shutdown, close the dishka container: finalizes APP-scoped resources
-    # (runs the teardown after `yield` in generator providers, e.g. engine.dispose()).
     await app_.state.dishka_container.close()
 
 
@@ -32,3 +31,8 @@ async def _on_unauthorized(request: Request, exc: Exception) -> JSONResponse:
 @app.exception_handler(UserAlreadyExistsError)
 async def _on_conflict(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={"detail": "User already exists"})
+
+
+@app.exception_handler(InsufficientPermissionsError)
+async def _on_forbidden(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "Forbidden"})

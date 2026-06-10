@@ -31,7 +31,7 @@ def decode_token(
 
 def create_token(
     token_type: TokenType,
-    subject: str,
+    subject: int,
     ttl: timedelta,
     key: str = settings.app.jwt.private_key.get_secret_value(),
     algorithm: str = settings.app.jwt.algorithm,
@@ -47,9 +47,9 @@ def create_token(
     return encode_token(payload, key, algorithm)
 
 
-def create_access_token(subject: str, ttl: timedelta = settings.app.jwt.access_ttl) -> str:
+def create_access_token(subject: int, ttl: timedelta = settings.app.jwt.access_ttl) -> str:
     return create_token(TokenType.ACCESS, subject, ttl)
 
 
-def create_refresh_token(subject: str, ttl: timedelta = settings.app.jwt.refresh_ttl) -> str:
+def create_refresh_token(subject: int, ttl: timedelta = settings.app.jwt.refresh_ttl) -> str:
     return create_token(TokenType.REFRESH, subject, ttl)
