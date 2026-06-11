@@ -24,14 +24,14 @@ class AuthService:
         if default_role is None:
             raise InvalidCredentialsError
         user = await self._uow.users.add(
-            UserInsert(username=username, hashed_password=get_password_hash(password), role_id=default_role.id)
+            UserInsert(username=username, hashed_password=await get_password_hash(password), role_id=default_role.id)
         )
         await self._uow.commit()
         return UserRead.model_validate(user)
 
     async def login(self, username: str, password: str) -> TokenResponse:
         user: User | None = await self._uow.users.get_by_username(username)
-        if user is None or not verify_password(password, user.hashed_password):
+        if user is None or not await verify_password(password, user.hashed_password):
             raise InvalidCredentialsError
         return TokenResponse(
             access_token=create_access_token(user.id),
