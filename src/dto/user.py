@@ -8,3 +8,4 @@ class UserInsertDTO(BaseModel):
 
 class UserUpdateDTO(BaseModel):
     email: str | None = None
+    hashed_password: str | None = None

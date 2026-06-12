@@ -46,8 +46,10 @@ class UserService:
         return UserReadWithRolesAndPermissionsS.model_validate(user)
 
     async def update_user(self, user_id: int, data: UserUpdateS) -> UserReadS:
-        dto = UserUpdateDTO(**data.model_dump(exclude_unset=True))
-        if (updated_user := await self._uow.users.update(user_id, dto)) is None:
+        raw = data.model_dump(exclude_unset=True)
+        if "password" in raw:
+            raw["hashed_password"] = await get_password_hash(raw.pop("password"))
+        if (updated_user := await self._uow.users.update(user_id, UserUpdateDTO(**raw))) is None:
             raise UserNotFoundError
         await self._uow.commit()
         return UserReadS.model_validate(updated_user)

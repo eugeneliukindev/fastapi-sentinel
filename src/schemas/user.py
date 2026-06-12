@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict, EmailStr
 
+from src.schemas.common import PartialSchemaMixin
 from src.schemas.rbac import RoleReadS
 from src.schemas.rbac.role import RoleReadWithPermissionsS
 
@@ -9,8 +10,8 @@ class UserCreateS(BaseModel):
     password: str
 
 
-class UserUpdateS(BaseModel):
-    email: str | None = None
+class UserUpdateS(PartialSchemaMixin, UserCreateS):
+    pass
 
 
 class UserReadS(BaseModel):
