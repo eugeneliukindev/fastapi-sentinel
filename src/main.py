@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from src.api.v1 import router as v1_router
 from src.exceptions.auth import InvalidCredentialsError, UserAlreadyExistsError
 from src.exceptions.rbac import InsufficientPermissionsError
+from src.exceptions.user import UserNotFoundError
 from src.ioc import container
 
 
@@ -36,3 +37,8 @@ async def _on_conflict(request: Request, exc: Exception) -> JSONResponse:
 @app.exception_handler(InsufficientPermissionsError)
 async def _on_forbidden(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "Forbidden"})
+
+
+@app.exception_handler(UserNotFoundError)
+async def _on_not_found(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "User not found"})

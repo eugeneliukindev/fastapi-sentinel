@@ -5,6 +5,7 @@ from src.services.auth.blacklist import TokenBlacklistService
 from src.services.auth.service import AuthService
 from src.services.rbac.permission import PermissionService
 from src.services.rbac.role import RoleService
+from src.services.user import UserService
 
 
 class ServicesProvider(Provider):
@@ -17,6 +18,10 @@ class ServicesProvider(Provider):
     @provide
     def get_auth_service(self, uow: UnitOfWork, blacklist_service: TokenBlacklistService) -> AuthService:
         return AuthService(uow, blacklist_service)
+
+    @provide
+    def get_user_service(self, uow: UnitOfWork) -> UserService:
+        return UserService(uow)
 
     @provide
     def get_role_service(self, uow: UnitOfWork) -> RoleService:
