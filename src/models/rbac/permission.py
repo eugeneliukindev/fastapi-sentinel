@@ -4,19 +4,22 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.models.base import Base
-from src.models.rbac.roles_permissions import roles_permissions_association_table
+from src.models.base import BaseOrm
+from src.models.rbac.role import RoleOrm
 
 if TYPE_CHECKING:
-    from src.models.rbac.role import Role
+    pass
 
 
-class Permission(Base):
+class PermissionOrm(BaseOrm):
     __tablename__ = "permissions"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    description: Mapped[str] = mapped_column(nullable=False)
 
-    roles: Mapped[set[Role]] = relationship(
-        "Role", secondary=roles_permissions_association_table, back_populates="permissions"
+    roles: Mapped[set[RoleOrm]] = relationship(
+        "RoleOrm",
+        secondary="role_permissions",
+        back_populates="permissions",
     )

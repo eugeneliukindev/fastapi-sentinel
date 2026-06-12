@@ -1,30 +1,30 @@
 from __future__ import annotations
 
-from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.models.base import Base
-from src.models.rbac.roles_permissions import roles_permissions_association_table
+from src.models.base import BaseOrm
+from src.models.user import UserOrm
 
 if TYPE_CHECKING:
-    from src.models.rbac.permission import Permission
-    from src.models.user import User
+    from .permission import PermissionOrm
 
 
-class RoleEnum(StrEnum):
-    ADMIN = "admin"
-    USER = "user"
-
-
-class Role(Base):
+class RoleOrm(BaseOrm):
     __tablename__ = "roles"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[RoleEnum] = mapped_column(unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    description: Mapped[str] = mapped_column(nullable=False)  # убрать unique
 
-    permissions: Mapped[set[Permission]] = relationship(
-        "Permission", secondary=roles_permissions_association_table, back_populates="roles"
+    permissions: Mapped[set[PermissionOrm]] = relationship(
+        "PermissionOrm",
+        secondary="role_permissions",
+        back_populates="roles",
     )
-    users: Mapped[list[User]] = relationship("User", back_populates="role")
+    users: Mapped[list[UserOrm]] = relationship(
+        "UserOrm",
+        secondary="user_roles",
+        back_populates="roles",
+    )

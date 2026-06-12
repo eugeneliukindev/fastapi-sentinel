@@ -15,7 +15,7 @@ _NAMING_CONVENTION: dict[str, str] = {
 }
 
 
-class Base(DeclarativeBase):
+class BaseOrm(DeclarativeBase):
     """Declarative base for every ORM model.
 
     Import-pure on purpose: it depends only on SQLAlchemy, so ``Base.metadata`` can be

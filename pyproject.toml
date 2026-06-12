@@ -1,5 +1,5 @@
 [project]
-name = "fastapi-jwt"
+name = "fastapi-sentinel"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
@@ -14,9 +14,12 @@ dependencies = [
 ]
 
 [dependency-groups]
+docs = [
+    "eralchemy[graphviz]>=1.7.0",
+]
 dev = [
     "pre-commit>=4.6.0",
-    "ruff>=0.15.15",
+    "ruff>=0.15.16",
 ]
 migration = [
     "alembic>=1.18.4",

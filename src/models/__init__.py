@@ -1,16 +1,16 @@
 __all__ = [
-    "Base",
-    "Permission",
-    "Role",
-    "RoleEnum",
-    "TokenBlacklist",
-    "User",
-    "roles_permissions_association_table",
+    "BaseOrm",
+    "PermissionOrm",
+    "RoleOrm",
+    "RoleOrm",
+    "RolePermissionsOrm",
+    "TokenBlacklistOrm",
+    "UserOrm",
+    "UserRolesOrm",
 ]
 
-from .base import Base
-from .rbac.permission import Permission
-from .rbac.role import Role, RoleEnum
-from .rbac.roles_permissions import roles_permissions_association_table
-from .token_blacklist import TokenBlacklist
-from .user import User
+from .association import RolePermissionsOrm, UserRolesOrm
+from .base import BaseOrm
+from .rbac import PermissionOrm, RoleOrm
+from .token_blacklist import TokenBlacklistOrm
+from .user import UserOrm
