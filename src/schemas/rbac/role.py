@@ -1,16 +1,15 @@
 from pydantic import BaseModel, ConfigDict
 
-from src.models.rbac.role import RoleEnum
-from src.schemas.rbac.permission import PermissionRead
+from src.schemas.rbac import PermissionReadS
 
 
-class RoleCreate(BaseModel):
-    name: RoleEnum
-
-
-class RoleRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class RoleReadS(BaseModel):
+    model_config = ConfigDict(from_attributes=True, frozen=True)
 
     id: int
-    name: RoleEnum
-    permissions: set[PermissionRead]
+    name: str
+    description: str
+
+
+class RoleReadWithPermissionsS(RoleReadS):
+    permissions: list[PermissionReadS]

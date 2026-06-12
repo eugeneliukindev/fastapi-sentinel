@@ -1,9 +1,6 @@
 from pydantic import BaseModel
 
 
-class PermissionInsert(BaseModel):
+class PermissionInsertDTO(BaseModel):
     name: str
-
-
-class PermissionUpdate(BaseModel):
-    name: str | None = None
+    description: str = ""

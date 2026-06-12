@@ -1,16 +1,16 @@
 from datetime import UTC, datetime
 
 from src.core.uow import UnitOfWork
-from src.dto import TokenBlacklistInsert, TokenPayload
+from src.dto import TokenBlacklistInsertDTO, TokenPayloadDTO
 
 
 class TokenBlacklistService:
     def __init__(self, uow: UnitOfWork) -> None:
         self._uow = uow
 
-    async def blacklist_token(self, payload: TokenPayload) -> None:
+    async def blacklist_token(self, payload: TokenPayloadDTO) -> None:
         await self._uow.token_blacklist.add(
-            TokenBlacklistInsert(
+            TokenBlacklistInsertDTO(
                 jti=payload.jti,
                 expires_at=datetime.fromtimestamp(payload.exp, tz=UTC),
             )

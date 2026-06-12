@@ -4,12 +4,12 @@ from datetime import UTC, datetime, timedelta
 import jwt
 
 from src.config import settings
-from src.dto import TokenPayload
+from src.dto import TokenPayloadDTO
 from src.enums import TokenType
 
 
 def encode_token(
-    payload: TokenPayload,
+    payload: TokenPayloadDTO,
     key: str = settings.app.jwt.private_key.get_secret_value(),
     algorithm: str = settings.app.jwt.algorithm,
 ) -> str:
@@ -21,9 +21,9 @@ def decode_token(
     expected_type: TokenType,
     key: str = settings.app.jwt.public_key,
     algorithm: str = settings.app.jwt.algorithm,
-) -> TokenPayload:
+) -> TokenPayloadDTO:
     decoded = jwt.decode(token, key=key, algorithms=[algorithm])
-    payload = TokenPayload(**decoded)
+    payload = TokenPayloadDTO(**decoded)
     if payload.type is not expected_type:
         raise jwt.InvalidTokenError
     return payload
@@ -37,7 +37,7 @@ def create_token(
     algorithm: str = settings.app.jwt.algorithm,
 ) -> str:
     now = datetime.now(UTC)
-    payload = TokenPayload(
+    payload = TokenPayloadDTO(
         sub=subject,
         type=token_type,
         iat=int(now.timestamp()),

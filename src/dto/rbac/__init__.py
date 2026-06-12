@@ -1,4 +1,4 @@
-__all__ = ["PermissionInsert", "PermissionUpdate", "RoleInsert", "RoleUpdate"]
+__all__ = ["PermissionInsertDTO", "RoleInsertDTO"]
 
-from src.dto.rbac.permission import PermissionInsert, PermissionUpdate
-from src.dto.rbac.role import RoleInsert, RoleUpdate
+from src.dto.rbac.permission import PermissionInsertDTO
+from src.dto.rbac.role import RoleInsertDTO

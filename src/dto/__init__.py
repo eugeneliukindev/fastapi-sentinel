@@ -1,5 +1,5 @@
-from src.dto.auth import TokenPayload
-from src.dto.token_blacklist import TokenBlacklistInsert
-from src.dto.user import UserInsert, UserUpdate
+from src.dto.auth import TokenPayloadDTO
+from src.dto.token_blacklist import TokenBlacklistInsertDTO
+from src.dto.user import UserInsertDTO, UserUpdateDTO
 
-__all__ = ["TokenBlacklistInsert", "TokenPayload", "UserInsert", "UserUpdate"]
+__all__ = ["TokenBlacklistInsertDTO", "TokenPayloadDTO", "UserInsertDTO", "UserUpdateDTO"]
