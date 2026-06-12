@@ -8,11 +8,11 @@ services:
       POSTGRES_DB: ${MY_APP__DB__NAME}
       PGDATA: /var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - "${MY_APP__DB__PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${MY_APP__DB__USERNAME} -d ${MY_APP__DB__NAME}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${MY_APP__DB__USERNAME} -d ${MY_APP__DB__NAME}" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -24,6 +24,7 @@ services:
     env_file: .env
     environment:
       MY_APP__DB__HOST: db
+      MY_APP__DB__PORT: 5432
     depends_on:
       db:
         condition: service_healthy
@@ -36,6 +37,15 @@ services:
     env_file: .env
     environment:
       MY_APP__DB__HOST: db
+      MY_APP__DB__PORT: 5432
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./src
+          target: /app/src
+        - action: rebuild
+          path: ./uv.lock
+
     ports:
       - "8000:8000"
     depends_on:
