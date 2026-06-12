@@ -1,41 +1,24 @@
-from typing import Annotated
-
 from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
-from fastapi import APIRouter, Depends, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, status
 
-from src.api.dependencies.auth import BearerToken, CurrentUser
-from src.schemas.auth import TokenResponse
-from src.schemas.user import UserCreate, UserRead
+from src.api.dependencies.auth import BearerTokenDep
+from src.schemas.auth import LoginRequestS, TokenResponseS
 from src.services.auth.service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"], route_class=DishkaRoute)
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register(data: UserCreate, auth: FromDishka[AuthService]) -> UserRead:
-    return await auth.register(data.username, data.password)
-
-
 @router.post("/login")
-async def login(
-    form: Annotated[OAuth2PasswordRequestForm, Depends()],
-    auth: FromDishka[AuthService],
-) -> TokenResponse:
-    return await auth.login(form.username, form.password)
+async def login(data: LoginRequestS, service: FromDishka[AuthService]) -> TokenResponseS:
+    return await service.login(data)
 
 
 @router.post("/refresh")
-async def refresh(token: BearerToken, auth: FromDishka[AuthService]) -> TokenResponse:
-    return await auth.refresh(token)
+async def refresh(token: BearerTokenDep, service: FromDishka[AuthService]) -> TokenResponseS:
+    return await service.refresh(token)
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(token: BearerToken, auth: FromDishka[AuthService]) -> None:
-    await auth.logout(token)
-
-
-@router.get("/me")
-async def me(user: CurrentUser) -> UserRead:
-    return user
+async def logout(token: BearerTokenDep, service: FromDishka[AuthService]) -> None:
+    await service.logout(token)
