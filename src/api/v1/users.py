@@ -30,6 +30,11 @@ async def get_user(user_id: int, service: FromDishka[UserService]) -> UserReadS:
     return await service.get_user_by_id(user_id)
 
 
+@router.put("/{user_id}", dependencies=[Depends(require_permission(PermissionEnum.USERS_UPDATE))])
+async def replace_user(user_id: int, data: UserCreateS, service: FromDishka[UserService]) -> UserReadS:
+    return await service.update_user(user_id, UserUpdateS(**data.model_dump()))
+
+
 @router.patch("/{user_id}", dependencies=[Depends(require_permission(PermissionEnum.USERS_UPDATE))])
 async def update_user(user_id: int, data: UserUpdateS, service: FromDishka[UserService]) -> UserReadS:
     return await service.update_user(user_id, data)
