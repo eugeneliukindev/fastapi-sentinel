@@ -1,19 +1,31 @@
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from src.dto.user import UserInsert, UserUpdate
-from src.models.rbac.role import Role
-from src.models.user import User
+from src.dto.user import UserInsertDTO, UserUpdateDTO
+from src.models import RoleOrm, UserOrm
 from src.repo.base import BaseRepository
 
 
-class UserRepository(BaseRepository[User, UserInsert, UserUpdate]):
-    model = User
+class UserRepository(BaseRepository[UserOrm, UserInsertDTO, UserUpdateDTO]):
+    model = UserOrm
 
-    async def get_by_username(self, username: str) -> User | None:
-        return await self._session.scalar(select(User).where(User.username == username))
+    async def get_by_email(self, email: str) -> UserOrm | None:
+        return await self._session.scalar(select(UserOrm).where(UserOrm.email == email))
 
-    async def get_by_id_with_role_and_permissions(self, user_id: int) -> User | None:
-        return await self._session.scalar(
-            select(User).where(User.id == user_id).options(selectinload(User.role).selectinload(Role.permissions))
+    async def get_by_id_with_roles(
+        self,
+        id_: int,
+    ) -> UserOrm | None:
+        stmt = select(UserOrm).where(UserOrm.id == id_).options(selectinload(UserOrm.roles))
+        return await self._session.scalar(stmt)
+
+    async def get_by_id_with_roles_and_permissions(
+        self,
+        id_: int,
+    ) -> UserOrm | None:
+        stmt = (
+            select(UserOrm)
+            .where(UserOrm.id == id_)
+            .options(selectinload(UserOrm.roles).selectinload(RoleOrm.permissions))
         )
+        return await self._session.scalar(stmt)

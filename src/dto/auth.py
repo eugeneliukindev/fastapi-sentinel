@@ -3,7 +3,7 @@ from pydantic import BaseModel, field_serializer
 from src.enums import TokenType
 
 
-class TokenPayload(BaseModel):
+class TokenPayloadDTO(BaseModel):
     sub: int
     iat: int
     exp: int

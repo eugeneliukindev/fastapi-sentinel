@@ -1,15 +1,11 @@
 from src.core.uow import UnitOfWork
-from src.dto import TokenPayload
-from src.dto.user import UserInsert
+from src.dto import TokenPayloadDTO
 from src.enums import TokenType
-from src.exceptions.auth import InvalidCredentialsError, UserAlreadyExistsError
-from src.models.rbac.role import RoleEnum
-from src.models.user import User
-from src.schemas.auth import TokenResponse
-from src.schemas.user import UserRead
+from src.exceptions.auth import InvalidCredentialsError
+from src.schemas.auth import LoginRequestS, TokenResponseS
 from src.services.auth.blacklist import TokenBlacklistService
 from src.services.auth.crypto.jwt import create_access_token, create_refresh_token, decode_token
-from src.services.auth.crypto.password import get_password_hash, verify_password
+from src.services.auth.crypto.password import verify_password
 
 
 class AuthService:
@@ -17,23 +13,12 @@ class AuthService:
         self._uow = uow
         self._blacklist_service = blacklist_service
 
-    async def register(self, username: str, password: str) -> UserRead:
-        if await self._uow.users.get_by_username(username) is not None:
-            raise UserAlreadyExistsError
-        default_role = await self._uow.roles.get_by_name(RoleEnum.USER)
-        if default_role is None:
+    async def login(self, data: LoginRequestS) -> TokenResponseS:
+        if (user := await self._uow.users.get_by_email(data.email)) is None or not await verify_password(
+            data.password, user.hashed_password
+        ):
             raise InvalidCredentialsError
-        user = await self._uow.users.add(
-            UserInsert(username=username, hashed_password=await get_password_hash(password), role_id=default_role.id)
-        )
-        await self._uow.commit()
-        return UserRead.model_validate(user)
-
-    async def login(self, username: str, password: str) -> TokenResponse:
-        user: User | None = await self._uow.users.get_by_username(username)
-        if user is None or not await verify_password(password, user.hashed_password):
-            raise InvalidCredentialsError
-        return TokenResponse(
+        return TokenResponseS(
             access_token=create_access_token(user.id),
             refresh_token=create_refresh_token(user.id),
         )
@@ -41,27 +26,23 @@ class AuthService:
     async def logout(self, token: str) -> None:
         await self._revoke_refresh_token(token)
 
-    async def access(self, token: str) -> UserRead:
-        payload = await self._validate_token(token, TokenType.ACCESS)
-        user = await self._uow.users.get_by_id_with_role_and_permissions(payload.sub)
-        if user is None:
-            raise InvalidCredentialsError
-        return UserRead.model_validate(user)
+    async def access(self, token: str) -> TokenPayloadDTO:
+        return await self._validate_token(token, TokenType.ACCESS)
 
-    async def refresh(self, token: str) -> TokenResponse:
+    async def refresh(self, token: str) -> TokenResponseS:
         payload = await self._revoke_refresh_token(token)
-        return TokenResponse(
+        return TokenResponseS(
             access_token=create_access_token(payload.sub),
             refresh_token=create_refresh_token(payload.sub),
         )
 
-    async def _revoke_refresh_token(self, token: str) -> TokenPayload:
+    async def _revoke_refresh_token(self, token: str) -> TokenPayloadDTO:
         payload = await self._validate_token(token, TokenType.REFRESH)
         await self._blacklist_service.blacklist_token(payload)
         await self._uow.commit()
         return payload
 
-    async def _validate_token(self, token: str, expected_type: TokenType) -> TokenPayload:
+    async def _validate_token(self, token: str, expected_type: TokenType) -> TokenPayloadDTO:
         payload = decode_token(token, expected_type)
         if await self._blacklist_service.is_blacklisted(payload.jti):
             raise InvalidCredentialsError

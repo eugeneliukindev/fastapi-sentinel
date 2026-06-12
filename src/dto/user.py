@@ -1,11 +1,10 @@
 from pydantic import BaseModel
 
 
-class UserInsert(BaseModel):
-    username: str
+class UserInsertDTO(BaseModel):
+    email: str
     hashed_password: str
-    role_id: int
 
 
-class UserUpdate(BaseModel):
-    username: str | None = None
+class UserUpdateDTO(BaseModel):
+    email: str | None = None
