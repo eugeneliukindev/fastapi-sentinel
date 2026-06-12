@@ -22,5 +22,11 @@ check: lint typecheck test
 dc *args:
     docker compose {{args}}
 
+psql:
+    just dc exec -it db psql -U {{env("MY_APP__DB__USERNAME")}} -d {{env("MY_APP__DB__NAME")}}
+
 alembic *args:
     uv run alembic {{args}}
+
+er:
+    uv run --group docs python scripts/generate_er.py
