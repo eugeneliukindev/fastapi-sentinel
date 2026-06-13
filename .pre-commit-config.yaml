@@ -51,12 +51,34 @@ repos:
     hooks:
       - id: uv-lock
         name: Check uv.lock is in sync
+      - id: uv-export
+        name: Export requirements.txt
+        args:
+          - "--frozen"
+          - "--output-file=requirements.txt"
+          - "--no-default-groups"
+          - "--quiet"
+          - "--no-annotate"
+          - "--no-hashes"
+          - "--no-header"
+        files: ^uv\.lock$
+      - id: uv-export
+        name: Export requirements.dev.txt
+        args:
+          - "--frozen"
+          - "--output-file=requirements.dev.txt"
+          - "--all-groups"
+          - "--quiet"
+          - "--no-annotate"
+          - "--no-hashes"
+          - "--no-header"
+        files: ^uv\.lock$
 
   - repo: local
     hooks:
       - id: generate-er-diagram
         name: Regenerate ER diagram
-        entry: uv run --group docs python scripts/generate_er.py
+        entry: uv run --group docs python scripts/generate_er
         language: system
         files: ^src/models/__init__\.py$
         pass_filenames: false

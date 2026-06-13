@@ -11,6 +11,7 @@ __all__ = [
 
 from .association import RolePermissionsOrm, UserRolesOrm
 from .base import BaseOrm
-from .rbac import PermissionOrm, RoleOrm
+from .permission import PermissionOrm
+from .role import RoleOrm
 from .token_blacklist import TokenBlacklistOrm
 from .user import UserOrm

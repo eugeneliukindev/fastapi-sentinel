@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from sqlalchemy import select
 
-from src.dto.rbac.role import RoleInsertDTO
-from src.models.rbac.role import RoleOrm
+from src.dto.role import RoleInsertDTO
+from src.models.role import RoleOrm
 from src.repo.base import BaseRepository
 
 

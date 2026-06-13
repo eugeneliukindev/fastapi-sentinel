@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import BaseOrm
-from src.models.rbac.role import RoleOrm
+from src.models.role import RoleOrm
 
 if TYPE_CHECKING:
     pass

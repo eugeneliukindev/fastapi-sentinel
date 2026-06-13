@@ -16,7 +16,7 @@ class RoleOrm(BaseOrm):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
-    description: Mapped[str] = mapped_column(nullable=False)  # убрать unique
+    description: Mapped[str] = mapped_column(nullable=False)
 
     permissions: Mapped[set[PermissionOrm]] = relationship(
         "PermissionOrm",

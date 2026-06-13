@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
-from src.dto.rbac.permission import PermissionInsertDTO
-from src.models.rbac.permission import PermissionOrm
+from src.dto.permission import PermissionInsertDTO
+from src.models.permission import PermissionOrm
 from src.repo.base import BaseRepository
 
 
