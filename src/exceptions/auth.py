@@ -3,4 +3,5 @@ class InvalidCredentialsError(Exception):
 
 
 class UserAlreadyExistsError(Exception):
-    """Registration with an already taken username."""
+    def __init__(self) -> None:
+        super().__init__("User already exists")
