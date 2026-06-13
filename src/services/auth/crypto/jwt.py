@@ -40,8 +40,8 @@ def create_token(
     payload = TokenPayloadDTO(
         sub=subject,
         type=token_type,
-        iat=int(now.timestamp()),
-        exp=int((now + ttl).timestamp()),
+        iat=now.timestamp(),
+        exp=(now + ttl).timestamp(),
         jti=uuid.uuid4().hex,
     )
     return encode_token(payload, key, algorithm)
