@@ -48,10 +48,25 @@
 
 ## RBAC model
 
-| Role | Permissions |
-|---|---|
-| `user` | — |
-| `admin` | `users:read` · `users:create` · `users:update` · `users:delete` |
+```mermaid
+flowchart LR
+    U(User) -->|has many| R(Role)
+    R -->|has many| P(Permission)
+
+    subgraph roles
+        R1[user]
+        R2[admin]
+    end
+
+    subgraph permissions
+        P1[users:read]
+        P2[users:create]
+        P3[users:update]
+        P4[users:delete]
+    end
+
+    R2 --> P1 & P2 & P3 & P4
+```
 
 Regular users have no permissions — authentication alone grants access to `/users/me/*` endpoints. Permissions are for staff roles that manage other users.
 
