@@ -52,4 +52,4 @@ check: lint typecheck test
 [doc("Regenerate docs/er_diagram.png")]
 [group("docs")]
 er:
-    uv run --group docs python scripts/generate_er
+    scripts/generate_er
