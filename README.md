@@ -16,10 +16,10 @@
 
 - [Features](#features)
 - [Stack](#stack)
-- [RBAC model](#rbac-model)
 - [Getting started](#getting-started)
 - [API](#api)
 - [Auth flow](#auth-flow)
+- [RBAC model](#rbac-model)
 - [Development](#development)
 - [ER diagram](#er-diagram)
 
@@ -31,7 +31,7 @@
 - **RBAC** — roles and permissions defined as `StrEnum`s, seeded via Alembic data migrations; `require_role` / `require_any_role` / `require_permission` / `require_any_permission` FastAPI dependencies
 - **Unit of Work** — single `UnitOfWork` wraps all repositories behind one `async with` session
 - **Generic repository** — `BaseRepository[Model, InsertDTO, UpdateDTO]` with `get_by_id`, `get_all`, `insert`, `update`, `delete`
-- **ER diagram** — auto-generated via eralchemy; pre-commit hook regenerates it on model changes
+- **ER diagram** — auto-generated via eralchemy; regenerate with `just er`
 
 ## Stack
 
@@ -45,53 +45,6 @@
 | Auth | [PyJWT](https://pyjwt.readthedocs.io) (RS256), [pwdlib](https://github.com/frankie567/pwdlib) (Argon2) |
 | Validation | [Pydantic v2](https://docs.pydantic.dev) |
 | Config | [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings) |
-
-## RBAC model
-
-```mermaid
-flowchart LR
-    U(User) -->|has many| R(Role)
-    R -->|has many| P(Permission)
-
-    subgraph roles
-        R1[user]
-        R2[admin]
-    end
-
-    subgraph permissions
-        P1[users:read]
-        P2[users:create]
-        P3[users:update]
-        P4[users:delete]
-    end
-
-    R2 --> P1 & P2 & P3 & P4
-```
-
-Regular users have no permissions — authentication alone grants access to `/users/me/*` endpoints. Permissions are for staff roles that manage other users.
-
-> [!IMPORTANT]
-> Roles and permissions are defined as `StrEnum`s (`RoleEnum`, `PermissionEnum`) and seeded via Alembic data migrations. To add a new role or permission, extend the enum and write a migration — do not insert them manually.
-
-<details>
-<summary>Project structure</summary>
-
-```
-src/
-├── api/v1/          # routers: auth, users, roles, permissions
-├── services/        # business logic
-├── repo/            # repository layer
-├── models/          # SQLAlchemy ORM models
-├── schemas/         # Pydantic request/response schemas
-├── dto/             # internal data transfer objects
-├── enums/           # RoleEnum, PermissionEnum, TokenType
-├── exceptions/      # domain exceptions
-├── ioc/             # Dishka providers (container wiring)
-├── core/            # UnitOfWork
-└── config.py        # pydantic-settings
-```
-
-</details>
 
 ---
 
@@ -230,6 +183,35 @@ sequenceDiagram
 
 ---
 
+## RBAC model
+
+```mermaid
+flowchart LR
+    U(User) -->|has many| R(Role)
+    R -->|has many| P(Permission)
+
+    subgraph roles
+        R1[user]
+        R2[admin]
+    end
+
+    subgraph permissions
+        P1[users:read]
+        P2[users:create]
+        P3[users:update]
+        P4[users:delete]
+    end
+
+    R2 --> P1 & P2 & P3 & P4
+```
+
+Regular users have no permissions — authentication alone grants access to `/users/me/*` endpoints. Permissions are for staff roles that manage other users.
+
+> [!IMPORTANT]
+> Roles and permissions are defined as `StrEnum`s (`RoleEnum`, `PermissionEnum`) and seeded via Alembic data migrations. To add a new role or permission, extend the enum and write a migration — do not insert them manually.
+
+---
+
 ## Development
 
 ```bash
@@ -243,11 +225,31 @@ just alembic revision --autogenerate -m "description"
 just alembic upgrade head
 ```
 
-Pre-commit hooks run ruff and regenerate the ER diagram automatically when `src/models/__init__.py` changes. Install once with:
+Pre-commit hooks run ruff on every commit. Install once with:
 
 ```bash
 uv run pre-commit install
 ```
+
+<details>
+<summary>Project structure</summary>
+
+```
+src/
+├── api/v1/          # routers: auth, users, roles, permissions
+├── services/        # business logic
+├── repo/            # repository layer
+├── models/          # SQLAlchemy ORM models
+├── schemas/         # Pydantic request/response schemas
+├── dto/             # internal data transfer objects
+├── enums/           # RoleEnum, PermissionEnum, TokenType
+├── exceptions/      # domain exceptions
+├── ioc/             # Dishka providers (container wiring)
+├── core/            # UnitOfWork
+└── config.py        # pydantic-settings
+```
+
+</details>
 
 <details>
 <summary>Configuration reference</summary>
@@ -265,7 +267,6 @@ All settings use the `MY_APP__` prefix with `__` as the nested delimiter.
 | `MY_APP__APP__JWT__PUBLIC_KEY` | — | RS256 public key (PEM) |
 | `MY_APP__APP__JWT__ACCESS_TTL` | `900` (15 min) | Access token lifetime in seconds |
 | `MY_APP__APP__JWT__REFRESH_TTL` | `2592000` (30 days) | Refresh token lifetime in seconds |
-
 
 </details>
 
