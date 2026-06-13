@@ -1,4 +1,5 @@
-from collections.abc import Callable
+from collections.abc import Callable, Coroutine
+from typing import Any, TypeAlias
 
 import jwt
 from fastapi import FastAPI, Request, status
@@ -7,6 +8,8 @@ from fastapi.responses import JSONResponse
 from src.exceptions.auth import InvalidCredentialsError, UserAlreadyExistsError
 from src.exceptions.rbac import InsufficientPermissionsError, RoleAlreadyAssignedError
 from src.exceptions.user import UserNotFoundError
+
+_HandlerType: TypeAlias = Callable[..., Coroutine[Any, Any, Any]]
 
 
 async def _on_unauthorized(request: Request, exc: Exception) -> JSONResponse:
@@ -25,7 +28,7 @@ async def _on_not_found(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "User not found"})
 
 
-_HANDLERS: dict[Callable, tuple[type[Exception], ...]] = {
+_HANDLERS: dict[_HandlerType, tuple[type[Exception], ...]] = {
     _on_unauthorized: (InvalidCredentialsError, jwt.InvalidTokenError),
     _on_conflict: (UserAlreadyExistsError, RoleAlreadyAssignedError),
     _on_forbidden: (InsufficientPermissionsError,),

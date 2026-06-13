@@ -46,7 +46,7 @@ class UserReadWithRolesSchema(UserReadSchema):
 
 
 class UserReadWithRolesAndPermissionsSchema(UserReadWithRolesSchema):
-    roles: list[RoleReadWithPermissionsSchema]
+    roles: list[RoleReadWithPermissionsSchema]  # type: ignore[assignment]
 
     def has_permission(self, *names: str) -> bool:
         permissions = {p.name for role in self.roles for p in role.permissions}

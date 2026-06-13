@@ -1,3 +1,4 @@
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from dishka.integrations.fastapi import setup_dishka
@@ -9,7 +10,7 @@ from src.ioc import container
 
 
 @asynccontextmanager
-async def lifespan(app_: FastAPI):
+async def lifespan(app_: FastAPI) -> AsyncGenerator[None]:
     yield
     await app_.state.dishka_container.close()
 

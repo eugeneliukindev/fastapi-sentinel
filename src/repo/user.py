@@ -11,7 +11,7 @@ class UserRepository(BaseRepository[UserOrm, UserInsertDTO, UserUpdateDTO]):
     model = UserOrm
 
     async def get_by_email(self, email: str) -> UserOrm | None:
-        return await self._session.scalar(select(UserOrm).where(UserOrm.email == email))
+        return await self._session.scalar(select(UserOrm).where(UserOrm.email == email))  # type: ignore[no-any-return]
 
     async def add_role(self, user_id: int, role_id: int) -> None:
         self._session.add(UserRolesOrm(user_id=user_id, role_id=role_id))
@@ -26,7 +26,7 @@ class UserRepository(BaseRepository[UserOrm, UserInsertDTO, UserUpdateDTO]):
         id_: int,
     ) -> UserOrm | None:
         stmt = select(UserOrm).where(UserOrm.id == id_).options(selectinload(UserOrm.roles))
-        return await self._session.scalar(stmt)
+        return await self._session.scalar(stmt)  # type: ignore[no-any-return]
 
     async def get_by_id_with_roles_and_permissions(
         self,
@@ -37,4 +37,4 @@ class UserRepository(BaseRepository[UserOrm, UserInsertDTO, UserUpdateDTO]):
             .where(UserOrm.id == id_)
             .options(selectinload(UserOrm.roles).selectinload(RoleOrm.permissions))
         )
-        return await self._session.scalar(stmt)
+        return await self._session.scalar(stmt)  # type: ignore[no-any-return]

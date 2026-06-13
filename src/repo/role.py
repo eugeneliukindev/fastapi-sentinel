@@ -10,4 +10,4 @@ class RoleRepository(BaseRepository[RoleOrm, RoleInsertDTO, BaseModel]):
     model = RoleOrm
 
     async def get_by_name(self, name: str) -> RoleOrm | None:
-        return await self._session.scalar(select(RoleOrm).where(RoleOrm.name == name))
+        return await self._session.scalar(select(RoleOrm).where(RoleOrm.name == name))  # type: ignore[no-any-return]

@@ -1,4 +1,5 @@
-from typing import Annotated
+from collections.abc import Callable, Coroutine
+from typing import Annotated, Any, TypeAlias
 
 from dishka import FromDishka
 from dishka.integrations.fastapi import inject
@@ -9,6 +10,8 @@ from starlette import status
 from src.schemas.user import UserReadSchema
 from src.services.auth.service import AuthService
 from src.services.user import UserService
+
+_CheckDepType: TypeAlias = Callable[..., Coroutine[Any, Any, None]]
 
 _http_bearer = HTTPBearer()
 BearerTokenDep = Annotated[str, Depends(lambda c=Depends(_http_bearer): c.credentials)]
@@ -27,7 +30,7 @@ async def get_current_user(
 CurrentUserDep = Annotated[UserReadSchema, Depends(get_current_user)]
 
 
-def require_role(*roles: str):
+def require_role(*roles: str) -> _CheckDepType:
     @inject
     async def _check(
         token: BearerTokenDep,
@@ -42,7 +45,7 @@ def require_role(*roles: str):
     return _check
 
 
-def require_any_role(*roles: str):
+def require_any_role(*roles: str) -> _CheckDepType:
     @inject
     async def _check(
         token: BearerTokenDep,
@@ -57,7 +60,7 @@ def require_any_role(*roles: str):
     return _check
 
 
-def require_permission(*permissions: str):
+def require_permission(*permissions: str) -> _CheckDepType:
     @inject
     async def _check(
         token: BearerTokenDep,
@@ -72,7 +75,7 @@ def require_permission(*permissions: str):
     return _check
 
 
-def require_any_permission(*permissions: str):
+def require_any_permission(*permissions: str) -> _CheckDepType:
     @inject
     async def _check(
         token: BearerTokenDep,
