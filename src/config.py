@@ -35,7 +35,7 @@ class _AppSettings(BaseModel):
     class _JwtSettings(BaseModel):
         public_key: str
         private_key: SecretStr
-        algorithm: Literal["RS256"] = "RS256"
+        algorithm: Annotated[Literal["RS256"], Field(default="RS256", frozen=True)]
         access_ttl: timedelta = timedelta(minutes=15)
         refresh_ttl: timedelta = timedelta(days=30)
 
