@@ -219,7 +219,7 @@ just run          # start dev server with hot reload
 just lint         # ruff check + format check
 just fmt          # ruff autofix + format
 just typecheck    # mypy strict
-just test         # pytest
+just test
 just er           # regenerate docs/er_diagram.png
 just alembic revision --autogenerate -m "description"
 just alembic upgrade head
