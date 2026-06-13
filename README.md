@@ -66,8 +66,8 @@ MY_APP__DB__NAME=sentinel
 MY_APP__DB__HOST=localhost
 MY_APP__DB__PORT=5432
 
-MY_APP__APP__JWT__PRIVATE_KEY="$(cat private.pem)"
-MY_APP__APP__JWT__PUBLIC_KEY="$(cat public.pem)"
+MY_APP__APP__JWT__PRIVATE_KEY="<contents of private.pem>"
+MY_APP__APP__JWT__PUBLIC_KEY="<contents of public.pem>"
 ```
 
 ### 3. Run with Docker Compose
