@@ -73,12 +73,3 @@ repos:
           - "--no-hashes"
           - "--no-header"
         files: ^uv\.lock$
-
-  - repo: local
-    hooks:
-      - id: generate-er-diagram
-        name: Regenerate ER diagram
-        entry: uv run --group docs python scripts/generate_er
-        language: system
-        files: ^src/models/__init__\.py$
-        pass_filenames: false
