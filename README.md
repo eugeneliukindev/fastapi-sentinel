@@ -129,11 +129,11 @@ API is available at `http://localhost:8000`. Interactive docs at [`/docs`](http:
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | `POST` | `/api/v1/users` | — | Register |
-| `GET` | `/api/v1/users/me` | any token | Get own profile |
-| `PUT` | `/api/v1/users/me` | any token | Replace own profile |
-| `PATCH` | `/api/v1/users/me` | any token | Update own profile |
-| `DELETE` | `/api/v1/users/me` | any token | Delete own account, returns deleted profile |
-| `POST` | `/api/v1/users/me/password` | any token | Change own password (requires current password) |
+| `GET` | `/api/v1/users/me` | Bearer (access token) | Get own profile |
+| `PUT` | `/api/v1/users/me` | Bearer (access token) | Replace own profile |
+| `PATCH` | `/api/v1/users/me` | Bearer (access token) | Update own profile |
+| `DELETE` | `/api/v1/users/me` | Bearer (access token) | Delete own account, returns deleted profile |
+| `POST` | `/api/v1/users/me/password` | Bearer (access token) | Change own password (requires current password) |
 
 ### Users — management
 
