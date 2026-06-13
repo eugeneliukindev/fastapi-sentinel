@@ -16,7 +16,7 @@ _OUTPUT = BASE_DIR / "docs" / "er_diagram.png"
 def main() -> None:
     _OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     old_content = _OUTPUT.read_bytes() if _OUTPUT.exists() else b""
-    render_er(BaseOrm.metadata, str(_OUTPUT), title="Sentinel")
+    render_er(BaseOrm.metadata, str(_OUTPUT), title="FastAPI Sentinel ER Diagram")
     if _OUTPUT.read_bytes() != old_content:
         sys.exit(1)
 
