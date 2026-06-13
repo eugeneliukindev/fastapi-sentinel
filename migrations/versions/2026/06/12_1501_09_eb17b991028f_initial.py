@@ -98,8 +98,7 @@ def upgrade() -> None:
         SELECT r.id, p.id
         FROM roles r
         CROSS JOIN permissions p
-        WHERE (r.name = 'user'  AND p.name IN ('users:read'))
-           OR (r.name = 'admin' AND p.name IN ('users:read', 'users:create', 'users:update', 'users:delete'))
+        WHERE r.name = 'admin' AND p.name IN ('users:read', 'users:create', 'users:update', 'users:delete')
         """
     )
 

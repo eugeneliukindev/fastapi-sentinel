@@ -1,37 +1,57 @@
 from pydantic import BaseModel, ConfigDict, EmailStr
 
 from src.schemas.common import PartialSchemaMixin
-from src.schemas.rbac import RoleReadS
-from src.schemas.rbac.role import RoleReadWithPermissionsS
+from src.schemas.role import RoleReadSchema, RoleReadWithPermissionsSchema
 
 
-class UserCreateS(BaseModel):
+class UserCreateSchema(BaseModel):
     email: EmailStr
     password: str
 
 
-class UserUpdateS(PartialSchemaMixin, UserCreateS):
+class UserUpdateSchema(BaseModel):
+    email: EmailStr
+
+
+class UserPartialUpdateSchema(UserUpdateSchema, PartialSchemaMixin):
     pass
 
 
-class UserReadS(BaseModel):
+class UserChangePasswordSchema(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class UserResetPasswordSchema(BaseModel):
+    new_password: str
+
+
+class UserReadSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     email: EmailStr
 
 
-class UserReadWithRolesS(UserReadS):
-    roles: list[RoleReadS]
+class UserReadWithRolesSchema(UserReadSchema):
+    roles: list[RoleReadSchema]
 
     def has_role(self, *names: str) -> bool:
         role_names = {role.name for role in self.roles}
         return all(name in role_names for name in names)
 
+    def has_any_role(self, *names: str) -> bool:
+        role_names = {role.name for role in self.roles}
+        return any(name in role_names for name in names)
 
-class UserReadWithRolesAndPermissionsS(UserReadWithRolesS):
-    roles: list[RoleReadWithPermissionsS]
+
+class UserReadWithRolesAndPermissionsSchema(UserReadWithRolesSchema):
+    roles: list[RoleReadWithPermissionsSchema]
 
     def has_permission(self, *names: str) -> bool:
         permissions = {p.name for role in self.roles for p in role.permissions}
         return all(name in permissions for name in names)
+
+    def has_any_permission(self, *names: str) -> bool:
+        permissions = {p.name for role in self.roles for p in role.permissions}
+        return any(name in permissions for name in names)

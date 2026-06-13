@@ -1,42 +1,69 @@
 # fastapi-sentinel
 
-Production-ready FastAPI template with async SQLAlchemy, JWT authentication (RS256), role-based access control, and a clean layered architecture. Use it as a starting point for any API that needs auth and permissions out of the box.
+> Production-ready FastAPI template with async SQLAlchemy, JWT authentication (RS256), role-based access control, and a clean layered architecture.
+
+[![Python](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-D71F00?logoColor=white)](https://docs.sqlalchemy.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Ruff](https://img.shields.io/badge/linting-ruff-261230?logo=ruff)](https://docs.astral.sh/ruff)
+[![mypy](https://img.shields.io/badge/mypy-strict-2A6DB2)](https://mypy-lang.org)
+[![JWT](https://img.shields.io/badge/auth-RS256-000000?logo=jsonwebtokens&logoColor=white)](https://jwt.io)
+
+---
+
+## Navigation
+
+- [Features](#features)
+- [Stack](#stack)
+- [RBAC model](#rbac-model)
+- [Getting started](#getting-started)
+- [API](#api)
+- [Auth flow](#auth-flow)
+- [Development](#development)
+- [ER diagram](#er-diagram)
+
+---
+
+## Features
+
+- **JWT auth** — asymmetric RS256 keys; access token (15 min) + refresh token (30 days) with per-token blacklist and rotation on refresh
+- **RBAC** — roles and permissions defined as `StrEnum`s, seeded via Alembic data migrations; `require_role` / `require_any_role` / `require_permission` / `require_any_permission` FastAPI dependencies
+- **Unit of Work** — single `UnitOfWork` wraps all repositories behind one `async with` session
+- **Generic repository** — `BaseRepository[Model, InsertDTO, UpdateDTO]` with `get_by_id`, `get_all`, `insert`, `update`, `delete`
+- **ER diagram** — auto-generated via eralchemy; pre-commit hook regenerates it on model changes
 
 ## Stack
 
 | Layer | Library |
 |---|---|
-| Web | FastAPI |
-| ORM | SQLAlchemy 2 (async) |
-| Database | PostgreSQL 18 via asyncpg |
-| Migrations | Alembic |
-| IoC / DI | Dishka |
-| Auth | PyJWT (RS256), pwdlib (Argon2) |
-| Validation | Pydantic v2 |
-| Config | pydantic-settings |
-
-## Features
-
-- **JWT auth** — asymmetric RS256 keys; access token (15 min) + refresh token (30 days) with per-token blacklist
-- **RBAC** — static roles and permissions defined as `StrEnum`s, seeded via Alembic data migration; `require_role` / `require_any_role` / `require_permission` / `require_any_permission` FastAPI dependencies
-- **Unit of Work** — single `UnitOfWork` wraps all repositories behind one `async with` session
-- **Generic repository** — `BaseRepository[Model, InsertDTO, UpdateDTO]` with `get_by_id`, `get_all`, `insert`, `update`, `delete`
-- **ER diagram** — auto-generated `docs/er_diagram.png` via eralchemy; pre-commit hook regenerates it on model changes
+| Web | [FastAPI](https://fastapi.tiangolo.com) |
+| ORM | [SQLAlchemy 2](https://docs.sqlalchemy.org) (async) |
+| Database | [PostgreSQL 18](https://www.postgresql.org) via [asyncpg](https://magicstack.github.io/asyncpg) |
+| Migrations | [Alembic](https://alembic.sqlalchemy.org) |
+| IoC / DI | [Dishka](https://dishka.readthedocs.io) |
+| Auth | [PyJWT](https://pyjwt.readthedocs.io) (RS256), [pwdlib](https://github.com/frankie567/pwdlib) (Argon2) |
+| Validation | [Pydantic v2](https://docs.pydantic.dev) |
+| Config | [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings) |
 
 ## RBAC model
 
 | Role | Permissions |
 |---|---|
-| `user` | `users:read` |
+| `user` | — |
 | `admin` | `users:read` · `users:create` · `users:update` · `users:delete` |
 
-New roles and permissions are added by extending `RoleEnum` / `PermissionEnum` and writing a data migration. `src/utils/mappings.py` documents the role → permission matrix.
+Regular users have no permissions — authentication alone grants access to `/users/me/*` endpoints. Permissions are for staff roles that manage other users.
 
-## Project structure
+> [!IMPORTANT]
+> Roles and permissions are defined as `StrEnum`s (`RoleEnum`, `PermissionEnum`) and seeded via Alembic data migrations. To add a new role or permission, extend the enum and write a migration — do not insert them manually.
+
+<details>
+<summary>Project structure</summary>
 
 ```
 src/
-├── api/v1/          # routers: auth, users, rbac
+├── api/v1/          # routers: auth, users, roles, permissions
 ├── services/        # business logic
 ├── repo/            # repository layer
 ├── models/          # SQLAlchemy ORM models
@@ -48,6 +75,10 @@ src/
 ├── core/            # UnitOfWork
 └── config.py        # pydantic-settings
 ```
+
+</details>
+
+---
 
 ## Getting started
 
@@ -79,7 +110,28 @@ just dc up -d --build
 
 This starts three services in order: `db` → `migrate` (runs Alembic `upgrade head`) → `app`.
 
-### 4. Local development (without Docker)
+### 4. Bootstrap first admin
+
+The migration seeds roles and permissions but no users. Register the first user via the public API:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@example.com", "password": "yourpassword"}'
+```
+
+Then assign the admin role directly in the database (via `just psql` or any Postgres client):
+
+```sql
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u, roles r
+WHERE u.email = 'admin@example.com' AND r.name = 'admin';
+```
+
+> [!NOTE]
+> This one-time SQL step is only needed for the very first admin. After that, role assignment is done through the API using an admin token — `POST /v1/users/{id}/roles/{role_id}`.
+
+### 5. Local development (without Docker)
 
 ```bash
 uv sync
@@ -88,7 +140,9 @@ just alembic upgrade head
 just run
 ```
 
-API is available at `http://localhost:8000`. Interactive docs at `/docs`.
+API is available at `http://localhost:8000`. Interactive docs at [`/docs`](http://localhost:8000/docs).
+
+---
 
 ## API
 
@@ -96,59 +150,61 @@ API is available at `http://localhost:8000`. Interactive docs at `/docs`.
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `POST` | `/v1/auth/login` | — | Returns access + refresh tokens |
-| `POST` | `/v1/auth/refresh` | Bearer (refresh) | Rotates both tokens |
-| `POST` | `/v1/auth/logout` | Bearer (refresh) | Blacklists the refresh token |
+| `POST` | `/api/v1/auth/login` | — | Returns access + refresh tokens |
+| `POST` | `/api/v1/auth/refresh` | Bearer (refresh token) | Blacklists old refresh token, issues new pair |
+| `POST` | `/api/v1/auth/logout` | Bearer (access token) + `refresh_token` in body | Blacklists both tokens |
 
-### Users
 
-| Method | Path | Required | Description |
-|---|---|---|---|
-| `GET` | `/v1/users/me` | any token | Current user |
-| `POST` | `/v1/users` | — | Register |
-| `GET` | `/v1/users` | role `admin` | List all users |
-| `GET` | `/v1/users/{id}` | perm `users:read` | Get user |
-| `PATCH` | `/v1/users/{id}` | perm `users:update` | Update user |
-| `DELETE` | `/v1/users/{id}` | perm `users:delete` | Delete user |
-| `POST` | `/v1/users/{id}/roles/{role_id}` | role `admin` | Assign role |
-| `DELETE` | `/v1/users/{id}/roles/{role_id}` | role `admin` | Revoke role |
 
-### RBAC (read-only)
+### Users — self-service
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET` | `/v1/rbac/roles` | any token | List roles |
-| `GET` | `/v1/rbac/permissions` | any token | List permissions |
+| `POST` | `/api/v1/users` | — | Register |
+| `GET` | `/api/v1/users/me` | any token | Get own profile |
+| `PUT` | `/api/v1/users/me` | any token | Replace own profile |
+| `PATCH` | `/api/v1/users/me` | any token | Update own profile |
+| `DELETE` | `/api/v1/users/me` | any token | Delete own account, returns deleted profile |
+| `POST` | `/api/v1/users/me/password` | any token | Change own password (requires current password) |
+
+### Users — management
+
+| Method | Path | Required | Description |
+|---|---|---|---|
+| `GET` | `/api/v1/users` | `users:read` | List all users |
+| `GET` | `/api/v1/users/{id}` | `users:read` | Get user |
+| `PUT` | `/api/v1/users/{id}` | `users:update` | Replace user |
+| `PATCH` | `/api/v1/users/{id}` | `users:update` | Update user |
+| `DELETE` | `/api/v1/users/{id}` | `users:delete` | Delete user |
+| `POST` | `/api/v1/users/{id}/password` | `users:update` | Reset user password (no current password required) |
+| `POST` | `/api/v1/users/{id}/roles/{role_id}` | role `admin` | Assign role |
+| `DELETE` | `/api/v1/users/{id}/roles/{role_id}` | role `admin` | Revoke role |
+
+### RBAC (read-only)
+
+| Method | Path | Required | Description |
+|---|---|---|---|
+| `GET` | `/api/v1/roles` | role `admin` | List roles |
+| `GET` | `/api/v1/permissions` | role `admin` | List permissions |
+
+---
 
 ## Auth flow
 
 ```
-POST /login  →  { access_token, refresh_token }
-                        │
-              access_token (Bearer) used on every request
-                        │
-              when expired → POST /refresh  →  new token pair
-                        │
-              POST /logout  →  refresh_token blacklisted
+POST /api/v1/auth/login  →  { access_token, refresh_token }
+                                  │
+                    access_token (Bearer) used on every request
+                                  │
+              when expired → POST /api/v1/auth/refresh (Bearer: refresh_token)  →  new token pair
+                                  │
+              POST /api/v1/auth/logout (Bearer: access_token, body: refresh_token)
+                                  → both tokens blacklisted immediately
 ```
 
-Refresh token rotation: each `/refresh` call blacklists the old token and issues a new pair, preventing reuse.
+Refresh token rotation: each `/refresh` call blacklists the old refresh token and issues a new pair, preventing reuse.
 
-## Configuration reference
-
-All settings use the `MY_APP__` prefix with `__` as the nested delimiter.
-
-| Variable | Default | Description |
-|---|---|---|
-| `MY_APP__DB__USERNAME` | — | Postgres user |
-| `MY_APP__DB__PASSWORD` | — | Postgres password |
-| `MY_APP__DB__NAME` | — | Database name |
-| `MY_APP__DB__HOST` | `localhost` | Postgres host |
-| `MY_APP__DB__PORT` | `5432` | Postgres port |
-| `MY_APP__APP__JWT__PRIVATE_KEY` | — | RS256 private key (PEM) |
-| `MY_APP__APP__JWT__PUBLIC_KEY` | — | RS256 public key (PEM) |
-| `MY_APP__APP__JWT__ACCESS_TTL` | `PT15M` | Access token lifetime |
-| `MY_APP__APP__JWT__REFRESH_TTL` | `P30D` | Refresh token lifetime |
+---
 
 ## Development
 
@@ -168,6 +224,28 @@ Pre-commit hooks run ruff and regenerate the ER diagram automatically when `src/
 ```bash
 uv run pre-commit install
 ```
+
+<details>
+<summary>Configuration reference</summary>
+
+All settings use the `MY_APP__` prefix with `__` as the nested delimiter.
+
+| Variable | Default | Description |
+|---|---|---|
+| `MY_APP__DB__USERNAME` | — | Postgres user |
+| `MY_APP__DB__PASSWORD` | — | Postgres password |
+| `MY_APP__DB__NAME` | — | Database name |
+| `MY_APP__DB__HOST` | `localhost` | Postgres host |
+| `MY_APP__DB__PORT` | `5432` | Postgres port |
+| `MY_APP__APP__JWT__PRIVATE_KEY` | — | RS256 private key (PEM) |
+| `MY_APP__APP__JWT__PUBLIC_KEY` | — | RS256 public key (PEM) |
+| `MY_APP__APP__JWT__ACCESS_TTL` | `900` (15 min) | Access token lifetime in seconds |
+| `MY_APP__APP__JWT__REFRESH_TTL` | `2592000` (30 days) | Refresh token lifetime in seconds |
+
+
+</details>
+
+---
 
 ## ER diagram
 
