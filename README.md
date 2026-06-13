@@ -191,18 +191,27 @@ API is available at `http://localhost:8000`. Interactive docs at [`/docs`](http:
 
 ## Auth flow
 
-```
-POST /api/v1/auth/login  →  { access_token, refresh_token }
-                                  │
-                    access_token (Bearer) used on every request
-                                  │
-              when expired → POST /api/v1/auth/refresh (Bearer: refresh_token)  →  new token pair
-                                  │
-              POST /api/v1/auth/logout (Bearer: access_token, body: refresh_token)
-                                  → both tokens blacklisted immediately
-```
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
 
-Refresh token rotation: each `/refresh` call blacklists the old refresh token and issues a new pair, preventing reuse.
+    Client->>API: POST /api/v1/auth/login
+    API-->>Client: access_token + refresh_token
+
+    Client->>API: Any request (Bearer: access_token)
+    API-->>Client: 200 OK
+
+    Note over Client,API: access_token expires
+
+    Client->>API: POST /api/v1/auth/refresh (Bearer: refresh_token)
+    API-->>Client: new access_token + new refresh_token
+
+    Note over Client,API: old refresh_token is blacklisted
+
+    Client->>API: POST /api/v1/auth/logout (Bearer: access_token)
+    API-->>Client: 200 OK — both tokens blacklisted
+```
 
 ---
 
