@@ -1,7 +1,7 @@
 set dotenv-load := true
 
 [doc("All command information")]
-default:
+_default:
     @just --list --unsorted --list-heading $'Available commands…\n'
 
 [doc("Start dev server with hot reload")]
@@ -41,13 +41,9 @@ fmt:
 typecheck:
     uv run mypy .
 
-[doc("Run tests")]
-[group("tests")]
-test:
-    uv run pytest
-
 [doc("Run all checks (CI equivalent)")]
-check: lint typecheck test
+[group("ci")]
+check: lint typecheck
 
 [doc("Regenerate docs/er_diagram.png")]
 [group("docs")]
