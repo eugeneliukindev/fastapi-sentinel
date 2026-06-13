@@ -274,4 +274,4 @@ All settings use the `MY_APP__` prefix with `__` as the nested delimiter.
 
 ## ER diagram
 
-![ER diagram](docs/er_diagram.png)
+<img src="docs/er_diagram.png" width="600" alt="ER diagram">
