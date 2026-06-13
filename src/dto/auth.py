@@ -12,4 +12,5 @@ class TokenPayloadDTO(BaseModel):
 
     @field_serializer("sub")
     def serialize_sub(self, value: int) -> str:
+        # PyJWT validates sub as str per RFC 7519
         return str(value)
