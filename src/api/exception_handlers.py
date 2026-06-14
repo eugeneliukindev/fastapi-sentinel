@@ -1,5 +1,5 @@
-from collections.abc import Callable, Coroutine
-from typing import Any, TypeAlias
+from collections.abc import Callable
+from typing import TypeAlias
 
 import jwt
 from fastapi import FastAPI, Request, status
@@ -9,23 +9,23 @@ from src.exceptions.auth import InvalidCredentialsError, UserAlreadyExistsError
 from src.exceptions.rbac import InsufficientPermissionsError, RoleAlreadyAssignedError
 from src.exceptions.user import UserNotFoundError
 
-_HandlerType: TypeAlias = Callable[..., Coroutine[Any, Any, Any]]
+_HandlerType: TypeAlias = Callable[..., JSONResponse]
 
 
-async def _on_unauthorized(request: Request, exc: Exception) -> JSONResponse:
-    return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": "Invalid credentials"})
+def _on_unauthorized(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": str(exc)})
 
 
-async def _on_conflict(request: Request, exc: Exception) -> JSONResponse:
+def _on_conflict(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)})
 
 
-async def _on_forbidden(request: Request, exc: Exception) -> JSONResponse:
-    return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "Forbidden"})
+def _on_forbidden(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exc)})
 
 
-async def _on_not_found(request: Request, exc: Exception) -> JSONResponse:
-    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "User not found"})
+def _on_not_found(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)})
 
 
 _HANDLERS: dict[_HandlerType, tuple[type[Exception], ...]] = {
