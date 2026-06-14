@@ -1,4 +1,5 @@
 set dotenv-load := true
+set fallback := true
 
 [doc("All command information")]
 _default:
@@ -43,6 +44,7 @@ typecheck:
 
 [doc("Run all checks (CI equivalent)")]
 [group("ci")]
+[parallel]
 check: lint typecheck
 
 [doc("Regenerate docs/er_diagram.png")]
