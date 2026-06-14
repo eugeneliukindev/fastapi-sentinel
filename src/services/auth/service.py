@@ -27,7 +27,7 @@ class AuthService:
 
     async def refresh(self, token: str) -> TokenResponseSchema:
         payload = await self._validate_token(token, TokenType.REFRESH)
-        await self._blacklist_service.blacklist_token(payload)
+        self._blacklist_service.blacklist_token(payload)
         await self._uow.commit()
         return TokenResponseSchema(
             access_token=create_access_token(payload.sub),
@@ -37,8 +37,8 @@ class AuthService:
     async def logout(self, access_token: str, refresh_token: str) -> None:
         access_payload = await self._validate_token(access_token, TokenType.ACCESS)
         refresh_payload = await self._validate_token(refresh_token, TokenType.REFRESH)
-        await self._blacklist_service.blacklist_token(access_payload)
-        await self._blacklist_service.blacklist_token(refresh_payload)
+        self._blacklist_service.blacklist_token(access_payload)
+        self._blacklist_service.blacklist_token(refresh_payload)
         await self._uow.commit()
 
     async def _validate_token(self, token: str, expected_type: TokenType) -> TokenPayloadDTO:

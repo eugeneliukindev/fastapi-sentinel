@@ -8,8 +8,8 @@ class TokenBlacklistService:
     def __init__(self, uow: UnitOfWork) -> None:
         self._uow = uow
 
-    async def blacklist_token(self, payload: TokenPayloadDTO) -> None:
-        await self._uow.token_blacklist.add(
+    def blacklist_token(self, payload: TokenPayloadDTO) -> None:
+        self._uow.token_blacklist.add(
             TokenBlacklistInsertDTO(
                 jti=payload.jti,
                 expires_at=datetime.fromtimestamp(payload.exp, tz=UTC),
