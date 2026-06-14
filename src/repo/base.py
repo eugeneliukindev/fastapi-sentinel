@@ -20,10 +20,9 @@ class BaseRepository[ModelT: BaseOrm, InsertT: BaseModel, UpdateT: BaseModel]:
         result = await self._session.execute(select(self.model))
         return list(result.scalars().all())
 
-    async def add(self, data: InsertT) -> ModelT:
+    def add(self, data: InsertT) -> ModelT:
         entity = self.model(**data.model_dump())
         self._session.add(entity)
-        await self._session.flush()
         return entity
 
     async def update(self, entity_id: Any, data: UpdateT) -> ModelT | None:

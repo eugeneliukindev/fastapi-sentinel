@@ -35,7 +35,7 @@ class UserService:
             raise InvalidCredentialsError
 
         hashed_password = await get_password_hash(data.password)
-        user = await self._uow.users.add(UserInsertDTO(email=data.email, hashed_password=hashed_password))
+        user = self._uow.users.add(UserInsertDTO(email=data.email, hashed_password=hashed_password))
         user.roles.append(role)
         await self._uow.commit()
 

@@ -9,13 +9,6 @@ from src.repo.base import BaseRepository
 class UserRepository(BaseRepository[UserOrm, UserInsertDTO, UserUpdateDTO]):
     model = UserOrm
 
-    async def add(self, data: UserInsertDTO) -> UserOrm:
-        entity = UserOrm(**data.model_dump())
-        entity.roles = []
-        self._session.add(entity)
-        await self._session.flush()
-        return entity
-
     async def get_by_email(self, email: str) -> UserOrm | None:
         return await self._session.scalar(select(UserOrm).where(UserOrm.email == email))  # type: ignore[no-any-return]
 
