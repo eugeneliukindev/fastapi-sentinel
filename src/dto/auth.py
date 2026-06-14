@@ -1,12 +1,16 @@
-from pydantic import BaseModel, field_serializer
+from typing import Annotated
+
+from pydantic import BaseModel, BeforeValidator, field_serializer
 
 from src.enums import TokenType
+
+_IntFromNumber = Annotated[int, BeforeValidator(int)]
 
 
 class TokenPayloadDTO(BaseModel):
     sub: int
-    iat: int
-    exp: int
+    iat: _IntFromNumber
+    exp: _IntFromNumber
     jti: str
     type: TokenType
 
