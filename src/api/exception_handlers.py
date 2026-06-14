@@ -9,7 +9,7 @@ from src.exceptions.auth import InvalidCredentialsError, UserAlreadyExistsError
 from src.exceptions.rbac import InsufficientPermissionsError, RoleAlreadyAssignedError
 from src.exceptions.user import UserNotFoundError
 
-_HandlerType: TypeAlias = Callable[..., JSONResponse]
+_HandlerType: TypeAlias = Callable[[Request, Exception], JSONResponse]
 
 
 def _on_unauthorized(request: Request, exc: Exception) -> JSONResponse:
