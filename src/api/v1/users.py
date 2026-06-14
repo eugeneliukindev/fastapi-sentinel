@@ -10,6 +10,7 @@ from src.schemas.user import (
     UserCreateSchema,
     UserPartialUpdateSchema,
     UserReadSchema,
+    UserReadWithRolesSchema,
     UserResetPasswordSchema,
     UserUpdateSchema,
 )
@@ -125,17 +126,16 @@ async def reset_user_password(user_id: int, schema: UserResetPasswordSchema, ser
     dependencies=[Depends(require_role(RoleEnum.ADMIN))],
     responses=RESOURCE_RESPONSES,
 )
-async def assign_role(user_id: int, role_id: int, service: FromDishka[UserService]) -> UserReadSchema:
+async def assign_role(user_id: int, role_id: int, service: FromDishka[UserService]) -> UserReadWithRolesSchema:
     """Assign a role to a user. Requires ADMIN role."""
     return await service.assign_role(user_id, role_id)
 
 
 @router.delete(
     "/{user_id}/roles/{role_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(require_role(RoleEnum.ADMIN))],
     responses=RESOURCE_RESPONSES,
 )
-async def revoke_role(user_id: int, role_id: int, service: FromDishka[UserService]) -> None:
+async def revoke_role(user_id: int, role_id: int, service: FromDishka[UserService]) -> UserReadWithRolesSchema:
     """Revoke a role from a user. Requires ADMIN role."""
-    await service.revoke_role(user_id, role_id)
+    return await service.revoke_role(user_id, role_id)

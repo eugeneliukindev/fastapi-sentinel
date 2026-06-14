@@ -36,7 +36,7 @@ class UserService:
 
         hashed_password = await get_password_hash(data.password)
         user = await self._uow.users.add(UserInsertDTO(email=data.email, hashed_password=hashed_password))
-        await self._uow.users.add_role(user.id, role.id)
+        user.roles.append(role)
         await self._uow.commit()
 
         return UserReadSchema(id=user.id, email=user.email)
@@ -104,25 +104,25 @@ class UserService:
         await self._uow.commit()
         return UserReadSchema.model_validate(deleted_user)
 
-    async def assign_role(self, user_id: int, role_id: int) -> UserReadSchema:
-        user = await self._uow.users.get_by_id(user_id)
+    async def assign_role(self, user_id: int, role_id: int) -> UserReadWithRolesSchema:
+        user = await self._uow.users.get_by_id_with_roles(user_id)
         role = await self._uow.roles.get_by_id(role_id)
         if user is None or role is None:
             raise InsufficientPermissionsError
 
         try:
-            await self._uow.users.add_role(user_id, role_id)
+            user.roles.append(role)
+            await self._uow.commit()
         except IntegrityError as e:
             raise RoleAlreadyAssignedError from e
-        else:
-            await self._uow.commit()
-        return UserReadSchema.model_validate(user)
+        return UserReadWithRolesSchema.model_validate(user)
 
-    async def revoke_role(self, user_id: int, role_id: int) -> None:
-        user = await self._uow.users.get_by_id(user_id)
+    async def revoke_role(self, user_id: int, role_id: int) -> UserReadWithRolesSchema:
+        user = await self._uow.users.get_by_id_with_roles(user_id)
         role = await self._uow.roles.get_by_id(role_id)
         if user is None or role is None:
             raise InsufficientPermissionsError
 
-        await self._uow.users.remove_role(user_id, role_id)
+        user.roles.remove(role)
         await self._uow.commit()
+        return UserReadWithRolesSchema.model_validate(user)
