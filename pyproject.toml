@@ -86,8 +86,8 @@ ignore = ["E501", "B008", "C901", "W191", "RUF001", "RUF002", "RUF003", "UP040"]
 
 
 [tool.ruff.lint.per-file-ignores]
-"**/migrations/*.py" = ["E402", "INP001"]
-"**/migrations/versions/*.py" = ["RUF012", "W291", "INP001"]
+"migrations/*.py" = ["E402", "INP001"]
+"migrations/versions/*.py" = ["RUF012", "W291", "INP001"]
 
 
 [tool.alembic]
